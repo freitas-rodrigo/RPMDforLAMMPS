@@ -1,94 +1,92 @@
 # Ring-Polymer Molecular Dynamics package for LAMMPS
-This repository hosts the source code of a [LAMMPS](http://lammps.sandia.gov/) code extension in the form of a [fix command](http://lammps.sandia.gov/doc/fix.html) that allows Ring-Polymer Molecular Dynamics (RPMD) calculations to be performed. Details about the algorithm implementation and capabilities can be found in:
+This repository hosts the source code of a [LAMMPS](http://lammps.sandia.gov/) code extension in the form of a [fix command](http://lammps.sandia.gov/doc/fix.html) that allows Ring-Polymer Molecular Dynamics (RPMD) simulations to be performed. Details about the algorithm implementation and capabilities can be found in:
 
 ["Quantum effects on dislocation motion from Ring-Polymer Molecular Dynamics"  
 Rodrigo Freitas, Mark Asta, and Vasily Bulatov  
 arXiv preprint:1712.0462 (submitted)](https://arxiv.org/abs/1712.04629)
 
 ## Installation
-Clone this repository to a subdirectory named USER-RPMD inside the `src/` directory of your LAMMPS installation:
+Clone this repository to a subdirectory named `USER-RPMD` inside the `src/` directory of your LAMMPS installation:
 ```
 cd <lammps-path>/src/
-git clone https://github.com/freitas-rodrigo/QuantumEffectsDislocationMotion.git USER-RPMD
+git clone https://github.com/freitas-rodrigo/RPMDforLAMMPS.git USER-RPMD
 ```
-While still inside the `src/` of LAMMPS, activate the code extension package with the command
+While still inside the `src/`, activate the code extension package with the command:
 ```
 make yes-user-RPMD
 ```
 Finally, [recompile](http://lammps.sandia.gov/doc/Section_start.html#making-lammps) LAMMPS by running `make <machine>` (for example: `make mpi`).
 
-This package requires LAMMPS to be compiled using MPI libraries, the code will not run if you use a serial LAMMPS executable (the inter-partition communication is done using MPI library routines). But notice that you can use the parallel LAMMPS executable to run this code in serial (or in more partitions than the number of physical processors you have) since the MPI routines will simulate virtual processors.
+This package requires LAMMPS to be compiled using MPI libraries, the code will not run if you use a serial LAMMPS executable because the RPMD inter-partition communication is done using MPI library routines. But notice that you can use the parallel LAMMPS executable to run this code in serial (or in more partitions than the number of physical processors you have) since the MPI routines will simulate virtual processors.
 
 ## Usage
 The only command that needs to be added to a LAMMPS input script in order to run a RPMD simulation is the
-`fix rpmd`, the command's syntax is described below. Notice that `fix rpmd` should be declared _before_ any other fix that alters the forces on the particles (such as thermostats or constraints). This is necessary because one of the actions of `fix rpmd` is to scale down all forces acting on the particles, thus any forces added by fixes declared before `fix rpmd` will be altered.
+`fix rpmd`, the command's syntax is described below. Notice that `fix rpmd` should be declared _before_ any other fix that modifies the forces on the particles (such as thermostats or constraints). This is necessary because one of the actions of `fix rpmd` is to scale down all forces acting on the particles, thus any forces added by `fix` commands declared before `fix rpmd` will be modified.
 
-The number of beads per ring polymer is determined by the use of the command-line flag `-partition` when running LAMMPS. For example, in order to run a RPMD simulation with 30 beads per ring polymer where 10 processors are used to run each of the 30 replicas of the system (resulting in a total of 300 processors) specified in the `in.lmp` LAMMPS input script we should use:
+The number of beads per ring polymer is determined by the use of the command-line flag `-partition` when running LAMMPS. For example, in order to run a RPMD simulation with 30 beads per ring polymer where 10 processors are used to run each of the 30 partitions of the system (resulting in a total of 300 processors) specified in the `in.lmp` LAMMPS input script we should use:
 ```
 mpirun -n 300 lmp_mpi -in in.lmp -partition 30x10
 ```
 
-### Fix syntax
+#### Fix syntax
 ```
 fix ID group-ID rpmd T
 ```
-- `ID`, `group-ID` are documented in [fix](http://lammps.sandia.gov/doc/fix.html) command. `group-ID` must be all.  
+- `ID` and `group-ID` are documented in [fix](http://lammps.sandia.gov/doc/fix.html) command. `group-ID` must be all.  
 - `rpmd` = style name of this fix command  
 - `T` = simulation temperature  
 
-#### Example: 
+##### Example: 
 ```
 fix f1 all rpmd 300
 ```
 This fix computes a global scalar and a global vector quantities that can be accessed by various output commands. The scalar is the sum of the ring-polymers' spring energy for each partition, where the spring energy is 0.5 * k * r^2. The vector is the partition's ring-polymers contribution to the stress tensor. The tensor has 6 components and it is stored in the following order: xx, yy, zz, xy, xz, yz. The scalar and vector values calculated by this fix are extensive.
 
 ## Example: quantum harmonic oscillator.
-Inside the example directory of this repository you should find scripts that compute the temperature dependence of the energy of a quantum harmonic oscillator. This is an instructional example because it shows how to use and post-process the data from fix rpmd.
+Inside the [`example`](example/) directory of this repository you should find scripts for simulations to compute the temperature dependence of the energy of a quantum harmonic oscillator. The scripts included also illustrate how to post-process data from `fix rpmd`. You will need python's modules [numpy](http://www.numpy.org/) and [matplotlib](https://matplotlib.org/) installed to run the post-processing scripts.
 
+#### Scripts included
 `in.lmp`: LAMMPS script to simulate 125 harmonic oscillators using RPMD.  
-`job.sh`: bash script to run the LAMMPS-RPMD simulations.
+`job.sh`: bash script to run the LAMMPS-RPMD simulations.  
+`post_processing/compute.py`: Reduce the data from all replicas and compute the total energy.  
+`post_processing/plot.py`: plot the temperature dependence of the total energy against analytical results.  
 
-By Running `./job.sh` the simulations will run for 7 different temperatures with the number of beads ranging from 29 to 4. In my 2012 personal laptop it takes ~2min to run this set of simulations. Inside post_processing there are python scripts to gather the data, compute the total energy, and plot the result. You will need python's modules numpy and matplotlib installed to run these scripts.
+#### Running the example scripts
+From the `example` directory use the command `./job.sh` to run the RPMD-LAMMPS simulations for a total of 7 different temperatures where the number of beads ranges from 29 to 4, it should take 1-3 minutes to run the simulations. From inside `example/post_processing/` use `python compute.py` to gather the data generated by `fix rpmd` and compute the total energy per harmonic oscillator. Finallty, run `python plot.py` to plot the results. If the scripts ran sucessfully you will obtain a `pdf` with the following plot:
 
-`compute.py`: Reduce the data from all replicas and compute thte total energy.  
-`plot.py`: plot the temperature dependence of the total energy.
-
-If the scripts run sucessfully you would be able to recover the plot below. An extended analysis of these simulations is given in the Supplementary Information section of the [paper](https://arxiv.org/abs/1712.04629).
+An extended analysis of these simulations, including convergence with respect to number of beads, is given in the Supplementary Information section of the [paper](https://arxiv.org/abs/1712.04629).
 
 ## Computing the quantum energy and stress
+Computing the quantum energy and stress from the output of LAMMPS and `fix rpmd` can be nontrivial due how scattered the data can become. Find below an algorithm and some code excerpts that can help in these tasks. 
 
-Computing the quantum energy and stress from the output of LAMMPS and fix rpmd can be nontrivial due how scattered the data can be between many files. Here is an algorithm and some code excerpts to help you out:
-
-### Energy:
-
-Let us assume you declared your fix rpmd as
+#### Energy:
+Let us assume `fix rpmd` was declared in the LAMMPS script as
 ```
 fix f1 all rpmd 300
 ```
-To extract the potential energy of your interatomic potential and the ring-polymer springs energy you should collect the data from these two variables:
+The potential energy of the interatomic potential and the ring-polymers springs can be collected into the following two LAMMPS variables:
 ```
 variable pair_pe equal pe/atom
 variable ring_pe equal f_f2/atoms
 ```
-where ``pair_pe`` is a variable for the interatomic potential energy and ``ring_pe`` is for the ring-polymer springs energy. To compute the total energy for the quantum system according to equation 3 from the Supplementary Information you would use in python, assuming you saved the interatomic potential energy and the ring-polymer potential energy as columns in the file "potential_energy_P.dat" where P is the replica number:
+where ``pair_pe`` is for the interatomic potential energy and ``ring_pe`` is for the ring-polymers springs energy. The total energy of the quantum systems is computed according to equation (2) from the [Supplementary Information](https://arxiv.org/abs/1712.04629). Assuming the data from `pair_pe` and `ring_pe` were stored as two columns in files named `potential_energy_P.dat` where `P` is the partition number, the following python script can be used to compute the total energy of the quantum system:
 ```python
 for ibead in range(1,nbeads+1):
     data = loadtxt('potential_energy_%d.dat' % ibead)
     pair_pe += data[:,0]
     ring_pe += data[:,1]
-E = 1.5*kB*T*nbeads - ring_pe + harm_pe/nbeads
+E = 1.5*kB*T*nbeads - ring_pe + pair_pe/nbeads
 ```
-where kB is the Boltzmann constant and T is the system temperature declared in the fix.
+where `kB` is the Boltzmann constant, and `T` is the system temperature declared in `fix rpmd`, `nbeads` is the total number of beads per ring polymer, and `E` is the total energy of the system.
 
-### Stress tensor:
-
-Let us assume the same setup as for the energy calculation. For the stress tensor we will be using equation 4 of the Supplementary Information. Suppose we are interested in the pressure only.
-xx component of the stress tensor. In the LAMMPS script we would use
+#### Stress tensor:
+Let us assume the same setup presented for the energy calculation above. The stress tensor of the quantum system is obtained through equation (3) from [Supplementary Information](https://arxiv.org/abs/1712.04629). For simplicity we will be computing the system's pressure, or equation (4) from [Supplementary Information](https://arxiv.org/abs/1712.04629). In the LAMMPS script we use
 ```
-compute  c1 all pressure NULL pair # Compute virial part of the pressure.
+compute  c1 all pressure NULL pair
 variable pair_P equal c_c1
 variable ring_P equal (f_f2[1]+f_f2[2]+f_f2[3])/(3*vol)
 ```  
+Then, assuming the data from these variables were stored as two columns in files named `pressure_P.dat` (where `P` is the partition number), the following python script can be used to compute quantum system pressure:
 ```python
 for ibead in range(1,nbeads+1):
     data = loadtxt('pressure_%d.dat' % ibead)
@@ -96,7 +94,7 @@ for ibead in range(1,nbeads+1):
     ring_P += data[:,1]
 P = nbeads*kB*T/v * eVA3tobar - ring_P + pair_P/nbeads
 ```
-Where v is the volume per atom and eVA3tobar is a conversion factor from eV/A^2 to bars (this fix has only been tested in metal units).
+Where `v` is the volume per atom and `eVA3tobar` is a units conversion factor from electron-Volt/Angstrom^2 to bars.
     
 # Author & Contact
 
