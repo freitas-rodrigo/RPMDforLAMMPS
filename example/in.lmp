@@ -1,0 +1,71 @@
+#----------------------------- Input variables --------------------------------#
+  # Initalizes random number generator
+  variable          rnd equal round(random(0,999,${RANDOM}))
+
+  # Input parameters.
+  variable          n    equal 5      # System size.
+  variable          m    equal 2.5    # Atomic mass.
+  variable          k    equal 1.0    # Harmonic oscillator spring constant.
+  variable          t    equal 100000 # Simulation time.
+  variable          dt   equal 0.0001 # Timestep.
+  variable          dt_t equal 1000   # Thermo output stride.
+
+  # Simulation variables.
+  variable          T0    equal 2.0*${T}  # Initial temperature.
+  variable          damp  equal 100*${dt} # Damping parameter for thermostat.
+  variable          ibead uloop ${nbeads} # ID number of each partition.
+#------------------------------------------------------------------------------#
+
+
+#---------------------------- Atomic setup ------------------------------------#
+  units             metal
+  atom_modify       map array # Necessary for fix RPMD.
+  atom_modify       sort 0 0  # Necessary for simulating harmonic oscillators.
+
+  # Define geometry and create atoms.
+  lattice           sc 100.0
+  region            sim_box block 0 ${n} 0 ${n} 0 ${n}
+  create_box        1 sim_box
+  create_atoms      1 box
+  mass              * ${m}
+
+  # Neighbor list and timestep.
+  neigh_modify      delay 0 every 100000 check no # Synchronize list update.
+  timestep          ${dt}
+#------------------------------------------------------------------------------#
+
+
+#----------------------- Fixes, computes, & constrains ------------------------#
+  # Define integrator and harmonic potential.
+  fix               f1 all nve
+  fix               f2 all spring/self ${k}
+  fix_modify        f2 energy yes
+
+  # Declares RPMD fix and thermostat.
+  fix               f3 all rpmd ${T}
+  fix               f4 all langevin ${T} ${T} ${damp} ${rnd}${ibead}
+  variable          rnd equal round(random(0,999,0)) # Generates new rnd #.
+#------------------------------------------------------------------------------#
+
+
+#--------------------------- Output setup -------------------------------------#
+  # Setup output variables.
+  variable          step    equal step
+  variable          pe      equal pe/atoms
+  variable          ring_pe equal f_f3/atoms # Ring-polymer potential energy.
+
+  # Thermo output.
+  thermo_style      custom step pe
+  thermo            10000
+  fix               f5 all print ${dt_t} "${step} ${pe} ${ring_pe}"  &
+                    title "# step pe/atom ring_pe" screen no         &
+                    file data/thermo/thermo_${T}K_${ibead}.dat
+#------------------------------------------------------------------------------#
+
+
+#----------------------------- Run simulation ---------------------------------#
+  # Initial temperature to accelerate equilibration
+  velocity          all create ${T0} ${rnd}${ibead} dist gaussian
+  variable          rnd equal round(random(0,999,0)) # Generates new rnd #.
+  run               ${t}
+#------------------------------------------------------------------------------#
