@@ -1,15 +1,16 @@
 #!/bin/bash
+# This bash script executes sequentially a series of LAMMPS-RPMD simulations at different temperatures.
+# Usage: bash job.sh
 
-# Path to LAMMPS executable.
-lammps="lammps/src/lmp_mpi"
+lammps="../../lmp_mpi" # Path to LAMMPS executable.
 
-# Create directory structure for output data.
+# Create directory structure for data output.
 mkdir -p data/logs
 mkdir -p data/thermo
 mkdir -p data/processed
 
-# Setup parameter list to loop over.
-T=(50 150 250 350 450 550 650) # Temperatures list.
+# Setup list of parameter to loop over.
+T=(50 150 250 350 450 550 650) # Temperature list.
 BEADS=(29 10 6 5 4 4 4)        # Number of beads for each temperature.
 
 # Loop over different temperatures.

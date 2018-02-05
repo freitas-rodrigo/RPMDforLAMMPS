@@ -1,5 +1,7 @@
+# This script runs a RPMD simulation of 125 harmonic oscillators in the canonical ensemble. Check job.sh for the variables that need to be passed on the command line.
+
 #--------------------------- Simulation variables -----------------------------#
-  # Initalizes random number generator
+  # Initalizes random number generator.
   variable          rnd equal round(random(0,999,${RANDOM}))
 
   # ID number of each partition.
@@ -12,7 +14,7 @@
   atom_modify       map array # Necessary for fix RPMD.
   atom_modify       sort 0 0  # Necessary for simulating harmonic oscillators.
 
-  # Define geometry and create atoms.
+  # Create atoms in simple cubic geometry.
   lattice           sc 100.0
   region            sim_box block 0 5 0 5 0 5
   create_box        1 sim_box
@@ -25,15 +27,12 @@
 #------------------------------------------------------------------------------#
 
 
-#----------------------- Fixes, computes, & constrains ------------------------#
-  # Define integrator and harmonic potential.
-  fix               f1 all nve
-  fix               f2 all spring/self 1.0
+#----------------------- Fixes, computes, & constraints -----------------------#
+  fix               f1 all nve # Define integrator.
+  fix               f2 all spring/self 1.0 # Harmonic oscillator potential.
   fix_modify        f2 energy yes
-
-  # Declares RPMD fix and thermostat.
   fix               f3 all rpmd ${T}
-  fix               f4 all langevin ${T} ${T} 0.01 ${rnd}${ibead}
+  fix               f4 all langevin ${T} ${T} 0.01 ${rnd}${ibead} # Thermostat.
   variable          rnd equal round(random(0,999,0)) # Generates new rnd #.
 #------------------------------------------------------------------------------#
 
@@ -41,7 +40,7 @@
 #--------------------------- Output setup -------------------------------------#
   # Setup output variables.
   variable          step    equal step
-  variable          pe      equal pe/atoms
+  variable          pe      equal pe/atoms   # Harmonic oscillator pot energy.
   variable          ring_pe equal f_f3/atoms # Ring-polymer potential energy.
 
   # Thermo output.
