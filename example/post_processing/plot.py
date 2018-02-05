@@ -1,5 +1,8 @@
 """
   This script plots the average energy computed from RPMD as a function of the temperature. It also computes and plots the analytical results for the energy of a quantum and a classical harmonic oscillator at finite temperature.
+
+  Usage:
+    python plot.py
 """
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -34,7 +37,7 @@ E_quantum = 1.5*cosh(n)/sinh(n) # Exact quantum mechanics result.
 E_classic = 3.0*temp            # Exact classical mechanics result.
 
 # RPMD results.
-T, E = loadtxt(workdir+'/thermo/energy_vs_T.dat', unpack=True)
+T, E = loadtxt(workdir+'/processed/energy_vs_T.dat', unpack=True)
 T *= kB/ho_e
 E /= ho_e
 
