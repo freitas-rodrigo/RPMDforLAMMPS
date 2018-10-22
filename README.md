@@ -2,8 +2,9 @@
 This repository hosts the source code of a [LAMMPS](http://lammps.sandia.gov/) code extension in the form of a [fix command](http://lammps.sandia.gov/doc/fix.html) that allows Ring-Polymer Molecular Dynamics (RPMD) simulations to be performed. Details about the algorithm implementation and capabilities can be found in:
 
 ["Quantum effects on dislocation motion from Ring-Polymer Molecular Dynamics"  
-Rodrigo Freitas, Mark Asta, and Vasily Bulatov  
-arXiv preprint:1712.0462 (submitted)](https://arxiv.org/abs/1712.04629)
+Rodrigo Freitas, Mark Asta, and Vasily Bulatov
+nature partner journal: Computational Materials (Open Access) 
+DOI:10.1038/s41524-018-0112-9](https://doi.org/10.1038/s41524-018-0112-9)
 
 ## Installation
 Clone this repository to a subdirectory named `USER-RPMD` inside the `src/` directory of your LAMMPS installation:
@@ -109,5 +110,4 @@ Where `v` is the volume per atom and `eVA3tobar` is the units conversion factor 
     
 ## Author & Contact
 
-Rodrigo Freitas | rodrigof@berkeley.edu
-
+Rodrigo Freitas | freitas@stanford.edu
