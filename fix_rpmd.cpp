@@ -20,7 +20,7 @@ static const char cite_fix_rpmd[] =
   "@article{freitas2018,\n"
   "  author={Freitas, Rodrigo and Asta, Mark and Bulatov, Vasily V},\n"
   "  title={Quantum effects on dislocation motion from Ring-Polymer Molecular Dynamics},\n"
-  "  journal={arXiv preprint arXiv:1712.04629},\n"
+  "  journal={npj Computational Materials},\n"
   "  year={2018},\n"
   "}\n\n";
 
