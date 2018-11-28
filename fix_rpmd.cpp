@@ -16,7 +16,7 @@ using namespace FixConst;  // Fix constants namespace (mask ID).
 using namespace MathConst; // Math constants namespace.
 
 static const char cite_fix_rpmd[] =
-  "ti/spring command:\n\n"
+  "fix rpmd command:\n\n"
   "@article{freitas2018,\n"
   "  author={Freitas, Rodrigo and Asta, Mark and Bulatov, Vasily V},\n"
   "  title={Quantum effects on dislocation motion from Ring-Polymer Molecular Dynamics},\n"
