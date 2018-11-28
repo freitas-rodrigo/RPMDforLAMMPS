@@ -2,61 +2,61 @@
 
 #--------------------------- Simulation variables -----------------------------#
   # Initalizes random number generator.
-  variable          rnd equal round(random(0,999,${RANDOM}))
+  variable         rnd equal round(random(0,999,${RANDOM}))
 
   # ID number of each partition.
-  variable          ibead uloop ${nbeads}
+  variable         ibead uloop ${nbeads}
 #------------------------------------------------------------------------------#
 
 
 #---------------------------- Atomic setup ------------------------------------#
-  units             metal
-  atom_modify       map array # Necessary for fix RPMD.
-  atom_modify       sort 0 0  # Necessary for simulating harmonic oscillators.
+  units            metal
+  atom_modify      map array # Necessary for fix RPMD.
+  atom_modify      sort 0 0 # Necessary for simulating harmonic oscillators.
 
   # Create atoms in simple cubic geometry.
-  lattice           sc 100.0
-  region            sim_box block 0 5 0 5 0 5
-  create_box        1 sim_box
-  create_atoms      1 box
-  mass              * 2.5
+  lattice          sc 100.0
+  region           sim_box block 0 5 0 5 0 5
+  create_box       1 sim_box
+  create_atoms     1 box
+  mass             * 2.5
 
   # Neighbor list and timestep.
-  neigh_modify      delay 0 every 100000 check no # Synchronize nlist update.
-  timestep          0.0001
+  neigh_modify     delay 0 every 100000 check no # Synchronize nlist update.
+  timestep         0.0001
 #------------------------------------------------------------------------------#
 
 
 #----------------------- Fixes, computes, & constraints -----------------------#
-  fix               f1 all nve # Define integrator.
-  fix               f2 all spring/self 1.0 # Harmonic oscillator potential.
-  fix_modify        f2 energy yes
-  fix               f3 all rpmd ${T}
-  fix               f4 all langevin ${T} ${T} 0.01 ${rnd}${ibead} # Thermostat.
-  variable          rnd equal round(random(0,999,0)) # Generates new rnd #.
+  fix              f1 all nve # Define integrator.
+  fix              f2 all spring/self 1.0 # Harmonic oscillator potential.
+  fix_modify       f2 energy yes
+  fix              f3 all rpmd ${T}
+  fix              f4 all langevin ${T} ${T} 0.01 ${rnd}${ibead} # Thermostat.
+  variable         rnd equal round(random(0,999,0)) # Generates new rnd #.
 #------------------------------------------------------------------------------#
 
 
 #--------------------------- Output setup -------------------------------------#
   # Setup output variables.
-  variable          step    equal step
-  variable          pe      equal pe/atoms   # Harmonic oscillator pot energy.
-  variable          ring_pe equal f_f3/atoms # Ring-polymer potential energy.
+  variable         step equal step
+  variable         pe equal pe/atoms # Harmonic oscillator pot energy.
+  variable         ring_pe equal f_f3/atoms # Ring-polymer potential energy.
 
   # Thermo output.
-  thermo_style      custom step pe
-  thermo            10000
-  fix               f5 all print 1000 "${step} ${pe} ${ring_pe}"  &
-                    title "# step pe/atom ring_pe" screen no      &
-                    file data/thermo/thermo_${T}K_${ibead}.dat
+  thermo_style     custom step pe
+  thermo           10000
+  fix              f5 all print 1000 "${step} ${pe} ${ring_pe}" &
+                   title "# step pe/atom ring_pe" screen no &
+                   file data/thermo/thermo_${T}K_${ibead}.dat
 #------------------------------------------------------------------------------#
 
 
 #----------------------------- Run simulation ---------------------------------#
   # Initialize velocities to accelerate equilibration.
-  variable          T0 equal 2.0*${T} # Initial temperature.
-  velocity          all create ${T0} ${rnd}${ibead} dist gaussian
-  variable          rnd equal round(random(0,999,0)) # Generates new rnd #.
+  variable         T0 equal 2.0*${T} # Initial temperature.
+  velocity         all create ${T0} ${rnd}${ibead} dist gaussian
+  variable         rnd equal round(random(0,999,0)) # Generates new rnd #.
 
-  run               100000
+  run              100000
 #------------------------------------------------------------------------------#

@@ -81,7 +81,7 @@ The potential energy of the interatomic potential and ring-polymers' springs can
 variable pair_pe equal pe/atom
 variable ring_pe equal f_f2/atoms
 ```
-Where ``pair_pe`` is for the interatomic potential energy and ``ring_pe`` is for the ring-polymers springs energy. The total energy of the quantum systems is computed according to equation (2) from the [Supplementary Information](https://doi.org/10.1038/s41524-018-0112-9). Assuming the data from `pair_pe` and `ring_pe` were stored as two columns in files named `potential_energy_N.dat`, where `N` is the partition number, the following python script can be used to compute the total energy of the quantum system:
+Where ``pair_pe`` is for the interatomic potential energy and ``ring_pe`` is for the ring-polymers springs energy. The total energy of the quantum systems is computed according to equation (11) from the [Supplementary Information](https://doi.org/10.1038/s41524-018-0112-9). Assuming the data from `pair_pe` and `ring_pe` were stored as two columns in files named `potential_energy_N.dat`, where `N` is the partition number, the following python script can be used to compute the total energy of the quantum system:
 ```python
 for ibead in range(1,nbeads+1):
     data = loadtxt('potential_energy_%d.dat' % ibead)
@@ -92,7 +92,7 @@ E = 1.5*kB*T*nbeads - ring_pe + pair_pe/nbeads
 where `kB` is the Boltzmann constant, `T` is the system temperature declared in `fix rpmd`, `nbeads` is the total number of beads per ring polymer, and `E` is the total energy of the quantum system.
 
 #### Stress tensor:
-Let us assume the same setup presented for the energy calculation above. The stress tensor of the quantum system is obtained through equation (3) from [Supplementary Information](https://doi.org/10.1038/s41524-018-0112-9). For simplicity we will be computing the system's pressure, given by equation (4) from [Supplementary Information](https://doi.org/10.1038/s41524-018-0112-9). In the LAMMPS script we use
+Let us assume the same setup presented for the energy calculation above. The stress tensor of the quantum system is obtained through equation (12) from [Supplementary Information](https://doi.org/10.1038/s41524-018-0112-9). For simplicity we will be computing the system's pressure. In the LAMMPS script we use
 ```
 compute c1 all pressure NULL pair
 variable pair_P equal c_c1

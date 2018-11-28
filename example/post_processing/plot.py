@@ -4,13 +4,13 @@
   Usage:
     python plot.py
 """
+from numpy import *
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.rc('xtick', labelsize=14)
 mpl.rc('ytick', labelsize=14)
 mpl.rc('axes', labelsize=18)
 mpl.rc('legend', fontsize=18)
-from numpy import *
 
 ################################################################################
 # Load and prepare data.                                                       #
@@ -62,8 +62,7 @@ ax.set_xlim(0, 1.4)
 ax.legend(loc='best', frameon=False)
 
 # Save.
-fig.savefig("fig_energy_vs_temperature.pdf", transparent=True)
-fig.clf()
-plt.close(fig)
+fig.savefig("fig_energy_vs_temperature.png", dpi=300)
+plt.close()
 
 ################################################################################
